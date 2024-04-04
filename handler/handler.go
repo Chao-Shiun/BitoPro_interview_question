@@ -3,9 +3,9 @@ package handler
 import (
 	"BitoPro_interview_question/model"
 	"BitoPro_interview_question/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Handler struct {
@@ -25,8 +25,25 @@ func (h *Handler) AddSinglePersonAndMatch(c *gin.Context) {
 		return
 	}
 
-	h.matchingService.AddSinglePersonAndMatch(&person)
-	c.JSON(http.StatusOK, gin.H{"message": "Single person added and matched"})
+	if person.Name == "" || person.Height <= 0 || person.RemainingDates <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		return
+	}
+
+	matchResult := h.matchingService.AddSinglePersonAndMatch(&person)
+	if matchResult != nil {
+		// 配對成功，返回被配對對象的詳細資訊
+		c.JSON(http.StatusOK, gin.H{
+			"status":        "matched",
+			"matchedPerson": matchResult,
+		})
+	} else {
+		// 沒有找到匹配的對象，返回特定的錯誤訊息
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  "unmatched",
+			"message": "no suitable match found",
+		})
+	}
 }
 
 func (h *Handler) RemoveSinglePerson(c *gin.Context) {
