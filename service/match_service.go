@@ -11,33 +11,9 @@ type MatchingService struct {
 	females []*model.SinglePerson
 }
 
-func createMockData() ([]*model.SinglePerson, []*model.SinglePerson) {
-	males := []*model.SinglePerson{
-		{Name: "John", Height: 180, GenderType: model.Male, RemainingDates: 3},
-		{Name: "Mike", Height: 165, GenderType: model.Male, RemainingDates: 2},
-		{Name: "Tom", Height: 168, GenderType: model.Male, RemainingDates: 1},
-		{Name: "David", Height: 178, GenderType: model.Male, RemainingDates: 4},
-		{Name: "Chris", Height: 182, GenderType: model.Male, RemainingDates: 2},
-	}
-
-	females := []*model.SinglePerson{
-		{Name: "Emily", Height: 165, GenderType: model.Female, RemainingDates: 2},
-		{Name: "Emma", Height: 170, GenderType: model.Female, RemainingDates: 3},
-		{Name: "Olivia", Height: 168, GenderType: model.Female, RemainingDates: 1},
-		{Name: "Sophia", Height: 154, GenderType: model.Female, RemainingDates: 1},
-		{Name: "Ava", Height: 167, GenderType: model.Female, RemainingDates: 3},
-	}
-
-	return males, females
-}
-
 func NewMatchingService() *MatchingService {
-	males, females := createMockData()
 
-	result := &MatchingService{
-		males:   males,
-		females: females,
-	}
+	result := &MatchingService{}
 
 	sort.Slice(result.males, func(i, j int) bool {
 		return result.males[i].Height < result.males[j].Height
@@ -89,9 +65,18 @@ func (s *MatchingService) isPersonExist(person *model.SinglePerson) bool {
 }
 
 func (s *MatchingService) matchPerson(person *model.SinglePerson, candidates []*model.SinglePerson) *model.SinglePerson {
-	index := sort.Search(len(candidates), func(i int) bool {
-		return person.Height <= candidates[i].Height
-	})
+
+	var index int
+
+	if person.GenderType == model.Male {
+		index = sort.Search(len(candidates), func(i int) bool {
+			return person.Height <= candidates[i].Height
+		})
+	} else if person.GenderType == model.Female {
+		index = sort.Search(len(candidates), func(i int) bool {
+			return person.Height >= candidates[i].Height
+		})
+	}
 
 	for i := index - 1; i >= 0; i-- {
 		candidate := candidates[i]
