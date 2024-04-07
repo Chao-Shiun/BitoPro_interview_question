@@ -1,11 +1,14 @@
 package handler
 
 import (
-	"BitoPro_interview_question/model"
-	"BitoPro_interview_question/service"
+	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"BitoPro_interview_question/model"
+	"BitoPro_interview_question/service"
 )
 
 type Handler struct {
@@ -33,14 +36,12 @@ func (h *Handler) AddSinglePersonAndMatch(c *gin.Context) {
 	matchResult := h.matchingService.AddSinglePersonAndMatch(&person)
 	if matchResult != nil {
 		// 配對成功，返回被配對對象的詳細資訊
-		c.JSON(http.StatusOK, gin.H{
-			"status":        "matched",
+		c.JSON(http.StatusCreated, gin.H{
 			"matchedPerson": matchResult,
 		})
 	} else {
 		// 沒有找到匹配的對象，返回特定的錯誤訊息
 		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "unmatched",
 			"message": "no suitable match found",
 		})
 	}
@@ -48,13 +49,33 @@ func (h *Handler) AddSinglePersonAndMatch(c *gin.Context) {
 
 func (h *Handler) RemoveSinglePerson(c *gin.Context) {
 	name := c.Param("name")
-	h.matchingService.RemoveSinglePerson(name)
-	c.JSON(http.StatusOK, gin.H{"message": "Single person removed"})
+
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name is invalid input"})
+		return
+	}
+
+	if h.matchingService.RemoveSinglePerson(name) {
+		c.JSON(http.StatusNoContent, gin.H{"message": "Single person removed"})
+	} else {
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Single person with name '%s' not found", name)})
+	}
 }
 
 func (h *Handler) QuerySinglePeople(c *gin.Context) {
-	gender := c.Query("gender")
-	limit := c.GetInt("limit")
+	gender := model.Gender(c.Query("gender"))
+	if !gender.IsValid() {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "gender is invalid gender"})
+		return
+	}
+
+	limitStr := c.Query("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "limit  invalid limit"})
+		return
+	}
+
 	people := h.matchingService.QuerySinglePeople(gender, limit)
 	c.JSON(http.StatusOK, people)
 }

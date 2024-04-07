@@ -1,9 +1,9 @@
 package service
 
 import (
-	"BitoPro_interview_question/model"
-
 	"sort"
+
+	"BitoPro_interview_question/model"
 )
 
 type MatchingService struct {
@@ -136,11 +136,41 @@ func (s *MatchingService) removeFemale(female *model.SinglePerson) {
 	}
 }
 
-func (s *MatchingService) RemoveSinglePerson(name string) {
-	// 實現移除單身人士的邏輯
+func (s *MatchingService) RemoveSinglePerson(name string) bool {
+	// 先在 males 中尋找符合名字的人
+	for i, m := range s.males {
+		if m.Name == name {
+			// 找到後,將其從 males 中移除
+			s.males = append(s.males[:i], s.males[i+1:]...)
+			return true
+		}
+	}
+
+	// 如果在 males 中沒找到,再到 females 中尋找
+	for i, f := range s.females {
+		if f.Name == name {
+			// 找到後,將其從 females 中移除
+			s.females = append(s.females[:i], s.females[i+1:]...)
+			return true
+		}
+	}
+
+	// 如果都沒找到,表示沒有這個人,返回 false
+	return false
 }
 
-func (s *MatchingService) QuerySinglePeople(gender string, limit int) []*model.SinglePerson {
-	// 實現查詢單身人士的邏輯
-	return nil
+func (s *MatchingService) QuerySinglePeople(gender model.Gender, limit int) []*model.SinglePerson {
+	var candidates []*model.SinglePerson
+
+	if gender == model.Male {
+		candidates = s.males
+	} else {
+		candidates = s.females
+	}
+
+	if limit <= 0 || limit > len(candidates) {
+		return candidates
+	}
+
+	return candidates[:limit]
 }

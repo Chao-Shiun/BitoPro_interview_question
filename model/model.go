@@ -1,11 +1,18 @@
 package model
 
-type Gender int
+type Gender string
 
 const (
-	Male Gender = iota
-	Female
+	Male   Gender = "male"
+	Female        = "female"
 )
+
+func (s Gender) IsValid() bool {
+	if s == Male || s == Female {
+		return true
+	}
+	return false
+}
 
 type SinglePerson struct {
 	Name           string `json:"name"`
