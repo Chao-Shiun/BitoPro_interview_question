@@ -1,0 +1,7 @@
+appname: Tinder
+port: 8080
+logger:
+  use: zapLogger
+  environment: dev
+  loglevel: debug
+  filename: Tinder.log

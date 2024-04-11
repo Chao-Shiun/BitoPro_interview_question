@@ -1,20 +1,32 @@
 package main
 
 import (
-	"BitoPro_interview_question/handler"
-	"BitoPro_interview_question/service"
+	"BitoPro_interview_question/config"
+	"BitoPro_interview_question/di"
+	"BitoPro_interview_question/logger"
+	"BitoPro_interview_question/server"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	run()
+}
+
+func run() error {
 	r := gin.Default()
 
-	matchingService := service.NewMatchingService()
-	handler := handler.NewHandler(matchingService)
+	d := di.BuildContainer()
 
-	r.POST("/add", handler.AddSinglePersonAndMatch)
-	r.DELETE("/remove/:name", handler.RemoveSinglePerson)
-	r.GET("/query", handler.QuerySinglePeople)
+	var l logger.LogInfoFormat
+	d.Invoke(func(logger logger.LogInfoFormat) {
+		l = logger
+	})
+	server.NewServer(r, d, l).SetMiddleware().MapRoutes()
 
-	r.Run(":8080")
+	var cfg *config.Config
+	d.Invoke(func(c *config.Config) {
+		cfg = c
+	})
+	r.Run(":" + cfg.Port)
+	return nil
 }
