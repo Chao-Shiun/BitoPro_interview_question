@@ -65,7 +65,7 @@ func (h *Handler) RemoveSinglePerson(c *gin.Context) {
 func (h *Handler) QuerySinglePeople(c *gin.Context) {
 	gender := model.Gender(c.Query("gender"))
 	if !gender.IsValid() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "gender is invalid gender"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "gender is invalid"})
 		return
 	}
 

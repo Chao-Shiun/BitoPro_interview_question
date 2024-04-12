@@ -21,3 +21,7 @@
 go.work
 
 .idea/
+
+handler/.DS_Store
+
+.DS_Store
